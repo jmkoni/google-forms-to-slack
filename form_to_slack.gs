@@ -48,30 +48,31 @@ function onFormSubmit(event) {
   }
   
   // Set up the Slack message payload.
-  var slackWebhookUrl = 'https://hooks.slack.com/services/xxxxxxxxx/yyyyyyyyy/zzzzzzzzzzzzzzzzzzzzzzzz'; // Replace with your own Slack webhook URL.
+  var slackWebhookUrl = 'https://hooks.slack.com/services/xxxxx/xxxxxxx/xxxxxx'; // Replace with your own Slack webhook URL.
   var payload = {
-    'text': 'New Forms response', // Set the message text.
-    'attachments': [ // Set the message attachments.
-      {
-        'fallback': 'Forms response', // Set the fallback message for devices that can't display attachments.
-        'color': '#36a64f', // Set the attachment color.
-        'fields': [] // Initialize an empty array to store the attachment fields.
-      }
-    ]
-  };
+    'blocks': []
+  }
   
   // Loop through each question in the formData object and add it as a field in the message attachment.
   for (var key in formData) {
     var value = formData[key];
+    // handle optional questions that aren't answered
+    if (value == '' || value == null) {
+      continue;
+    }
     if (Array.isArray(value)) {
       value = value.join('\n'); // Join file URLs with new lines.
     }
+    // IMO this makes a nicely formatted message
     var field = {
-      'title': key,
-      'value': value,
-      'short': false
-    };
-    payload.attachments[0].fields.push(field);
+      'type': 'section',
+      'text': {
+        'type': 'mrkdwn',
+        'text': `*${key}:* ${value}`
+      }
+    }
+
+    payload.blocks.push(field);
   }
   
   // Set up the options for the UrlFetchApp.fetch() method.
